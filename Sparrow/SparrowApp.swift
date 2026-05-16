@@ -16,6 +16,13 @@ struct SparrowApp: App {
     
     var body: some Scene {
         MenuBarExtra {
+            Button("About Sparrow") {
+                NSApplication.shared.orderFrontStandardAboutPanel(nil)
+                NSApplication.shared.activate()
+            }
+
+            Divider()
+
             Button("Settings...") {
                 openSettings()
             }
