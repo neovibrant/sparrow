@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct SettingsView: View {
     @ObservedObject var settings: SparrowSettings
@@ -6,10 +7,23 @@ struct SettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(spacing: 8) {
+                if let icon = NSImage(named: "SettingsHeaderIcon") {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 72, height: 72)
+                } else {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 44, weight: .medium))
+                        .foregroundStyle(.white)
+                        .frame(width: 72, height: 72)
+                        .background(.secondary, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                }
+
                 Text("Settings")
                     .font(.system(size: 24, weight: .bold))
 
-                Text("Choose which mouse side buttons switch Spaces. macOS reports extra mouse buttons as numbered inputs, so try a button and adjust the mapping if it moves in the wrong direction.")
+                Text("Setup Sparrow to work with your mouse.")
                     .font(.title3)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -35,6 +49,8 @@ struct SettingsView: View {
                             Text("Button \(number)").tag(number)
                         }
                     }
+                } footer: {
+                    Text("Tip: Button 0 is usually left click, Button 1 is right click, and Button 2 is middle click. Extra mouse buttons commonly start at 3.")
                 }
             }
             .formStyle(.grouped)
