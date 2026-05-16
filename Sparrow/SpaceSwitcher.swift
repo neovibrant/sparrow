@@ -46,9 +46,11 @@ final class SpaceSwitcher {
     private let gesturePhaseBegan: Int64 = 1
     private let gesturePhaseChanged: Int64 = 2
     private let gesturePhaseEnded: Int64 = 4
-    private let gestureVelocity = 2000.0
-    private let sameDirectionDebounceInterval = 0.12
-    private let oppositeDirectionDebounceInterval = 0.08
+    private let gestureVelocity = 950.0
+    private let gestureAnimationDuration = 0.16
+    private let gestureAnimationFrameCount = 10
+    private let sameDirectionDebounceInterval = 0.16
+    private let oppositeDirectionDebounceInterval = 0.16
     private var lastSwitchTime = Date.distantPast
     private var lastSwitchDirection: Direction?
 
@@ -94,20 +96,37 @@ final class SpaceSwitcher {
     }
 
     private func performDockSwipe(_ direction: Direction) -> Bool {
-        postDockSwipe(phase: gesturePhaseBegan, direction: direction)
-            && postDockSwipe(phase: gesturePhaseChanged, direction: direction)
-            && postDockSwipe(phase: gesturePhaseEnded, direction: direction)
+        guard postDockSwipe(phase: gesturePhaseBegan, direction: direction, progressMagnitude: 0.0, velocityMagnitude: 0.0) else {
+            return false
+        }
+
+        for frame in 1...gestureAnimationFrameCount {
+            let t = Double(frame) / Double(gestureAnimationFrameCount)
+            let progress = pow(t, 0.85)
+            let delay = gestureAnimationDuration * t
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                guard let self else { return }
+                _ = self.postDockSwipe(phase: self.gesturePhaseChanged, direction: direction, progressMagnitude: progress, velocityMagnitude: self.gestureVelocity)
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + gestureAnimationDuration + (1.0 / 60.0)) { [weak self] in
+            guard let self else { return }
+            _ = self.postDockSwipe(phase: self.gesturePhaseEnded, direction: direction, progressMagnitude: 1.0, velocityMagnitude: 0.0)
+        }
+
+        return true
     }
 
-    private func postDockSwipe(phase: Int64, direction: Direction) -> Bool {
+    private func postDockSwipe(phase: Int64, direction: Direction, progressMagnitude: Double, velocityMagnitude: Double) -> Bool {
         guard let event = CGEvent(source: nil) else {
             return false
         }
 
         let isRight = direction == .right
-        let progressMagnitude = Double(Float.leastNonzeroMagnitude)
         let progress = isRight ? progressMagnitude : -progressMagnitude
-        let velocity = isRight ? gestureVelocity : -gestureVelocity
+        let velocity = isRight ? velocityMagnitude : -velocityMagnitude
 
         event.setIntegerValueField(cgsEventTypeField, value: cgsEventDockControl)
         event.setIntegerValueField(gestureHIDTypeField, value: hidEventTypeDockSwipe)
