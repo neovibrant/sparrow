@@ -5,6 +5,7 @@ class MouseRemapper {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private let spaceSwitcher = SpaceSwitcher()
+    private let settings = SparrowSettings.shared
     
     // macOS virtual key codes
     private let kVK_Control: CGKeyCode = 0x3B
@@ -65,12 +66,14 @@ class MouseRemapper {
     private func handleEvent(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
         
-        // Button 3 = Back (Mouse Button 4)
-        // Button 4 = Forward (Mouse Button 5)
-        if buttonNumber == 3 || buttonNumber == 4 {
+        let leftButton = Int64(settings.moveSpaceLeftButton)
+        let rightButton = Int64(settings.moveSpaceRightButton)
+
+        if buttonNumber == leftButton || buttonNumber == rightButton {
             let location = event.location
+            let direction: SpaceSwitcher.Direction = buttonNumber == leftButton ? .left : .right
             DispatchQueue.main.async { [weak self] in
-                self?.spaceSwitcher.switchSpace(buttonNumber == 3 ? .right : .left, at: location)
+                self?.spaceSwitcher.switchSpace(direction, at: location)
             }
             return nil // Swallow the original event
         }
