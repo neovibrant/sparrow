@@ -5,20 +5,21 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Picker("Move Space Left", selection: $settings.moveSpaceLeftButton) {
-                ForEach(0...20, id: \.self) { number in
-                    Text("Button \(number)").tag(number)
+            Section("Mouse Buttons") {
+                Picker("Move Space Left", selection: $settings.moveSpaceLeftButton) {
+                    ForEach(0...20, id: \.self) { number in
+                        Text("Button \(number)").tag(number)
+                    }
                 }
-            }
 
-            Picker("Move Space Right", selection: $settings.moveSpaceRightButton) {
-                ForEach(0...20, id: \.self) { number in
-                    Text("Button \(number)").tag(number)
+                Picker("Move Space Right", selection: $settings.moveSpaceRightButton) {
+                    ForEach(0...20, id: \.self) { number in
+                        Text("Button \(number)").tag(number)
+                    }
                 }
             }
         }
         .formStyle(.grouped)
-        .padding(20)
         .frame(width: 360)
     }
 }
