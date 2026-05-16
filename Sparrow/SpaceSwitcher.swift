@@ -47,18 +47,26 @@ final class SpaceSwitcher {
     private let gesturePhaseChanged: Int64 = 2
     private let gesturePhaseEnded: Int64 = 4
     private let gestureVelocity = 2000.0
+    private let sameDirectionDebounceInterval = 0.12
+    private let oppositeDirectionDebounceInterval = 0.08
     private var lastSwitchTime = Date.distantPast
+    private var lastSwitchDirection: Direction?
 
     func switchSpace(_ direction: Direction, at location: CGPoint) {
-        guard Date().timeIntervalSince(lastSwitchTime) > 0.35 else {
-            print("Ignoring switch during debounce: \(direction)")
+        let elapsed = Date().timeIntervalSince(lastSwitchTime)
+        let debounceInterval = direction == lastSwitchDirection
+            ? sameDirectionDebounceInterval
+            : oppositeDirectionDebounceInterval
+
+        guard elapsed > debounceInterval else {
+            print("Blocked by debounce direction=\(direction) lastDirection=\(String(describing: lastSwitchDirection)) elapsed=\(String(format: "%.3f", elapsed)) threshold=\(debounceInterval)")
             return
         }
 
         let connection = connection
         debugPrintSpaces(connection: connection)
         guard let display = displayInfo(at: location, connection: connection) else {
-            print("No display info for switch location: \(location)")
+            print("Blocked: no display info direction=\(direction) location=\(location)")
             return
         }
 
@@ -71,17 +79,17 @@ final class SpaceSwitcher {
         }
 
         guard display.spaceIDs.indices.contains(targetIndex) else {
-            print("No target space for direction: \(direction) on display: \(display.id) currentIndex: \(display.currentIndex)")
+            print("Blocked: no target space direction=\(direction) display=\(display.id) currentIndex=\(display.currentIndex) targetIndex=\(targetIndex) spaceCount=\(display.spaceIDs.count)")
             return
         }
 
-        lastSwitchTime = Date()
-
         let swipeDirection = direction
         if performDockSwipe(swipeDirection) {
-            print("Posted Dock swipe: \(swipeDirection) for requested direction: \(direction) on display: \(display.id) targetIndex: \(targetIndex)")
+            lastSwitchTime = Date()
+            lastSwitchDirection = direction
+            print("Posted Dock swipe direction=\(swipeDirection) requested=\(direction) display=\(display.id) currentIndex=\(display.currentIndex) targetIndex=\(targetIndex) elapsed=\(String(format: "%.3f", elapsed))")
         } else {
-            print("Failed to post Dock swipe: \(swipeDirection)")
+            print("Failed: Dock swipe direction=\(swipeDirection) requested=\(direction) display=\(display.id) currentIndex=\(display.currentIndex) targetIndex=\(targetIndex)")
         }
     }
 
