@@ -7,11 +7,6 @@ class MouseRemapper {
     private let spaceSwitcher = SpaceSwitcher()
     private let settings = SparrowSettings.shared
     
-    // macOS virtual key codes
-    private let kVK_Control: CGKeyCode = 0x3B
-    private let kVK_ArrowLeft: CGKeyCode = 0x7B
-    private let kVK_ArrowRight: CGKeyCode = 0x7C
-    
     init() {
         startListening()
     }
@@ -39,8 +34,6 @@ class MouseRemapper {
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource!, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
-        
-        print("Sparrow is listening for mouse events...")
     }
 
     private static let eventTapCallback: CGEventTapCallBack = { _, type, event, userInfo in
@@ -49,8 +42,6 @@ class MouseRemapper {
         }
 
         let remapper = Unmanaged<MouseRemapper>.fromOpaque(userInfo).takeUnretainedValue()
-        let button = event.getIntegerValueField(.mouseEventButtonNumber)
-        print("Tap: type=\(type.rawValue) button=\(button)")
         return remapper.handleEvent(type: type, event: event)
     }
     
@@ -81,28 +72,4 @@ class MouseRemapper {
         return Unmanaged.passUnretained(event)
     }
     
-    private func postSpaceSwitch(keyCode: CGKeyCode) {
-        guard let source = CGEventSource(stateID: .hidSystemState) else {
-            print("Failed to create event source")
-            return
-        }
-
-        let controlDown = CGEvent(keyboardEventSource: source, virtualKey: kVK_Control, keyDown: true)
-        controlDown?.flags = CGEventFlags.maskControl
-        controlDown?.post(tap: .cghidEventTap)
-        
-        let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true)
-        keyDown?.flags = [CGEventFlags.maskControl, CGEventFlags.maskNumericPad]
-        keyDown?.post(tap: .cghidEventTap)
-        
-        let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false)
-        keyUp?.flags = [CGEventFlags.maskControl, CGEventFlags.maskNumericPad]
-        keyUp?.post(tap: .cghidEventTap)
-
-        let controlUp = CGEvent(keyboardEventSource: source, virtualKey: kVK_Control, keyDown: false)
-        controlUp?.flags = []
-        controlUp?.post(tap: .cghidEventTap)
-        
-        print("Posted space switch: \(keyCode == kVK_ArrowLeft ? "left" : "right")")
-    }
 }

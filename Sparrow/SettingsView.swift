@@ -11,19 +11,19 @@ struct SettingsView: View {
                     Image(nsImage: icon)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 72, height: 72)
+                        .frame(width: 64, height: 64)
                 } else {
                     Image(systemName: "gearshape.fill")
-                        .font(.system(size: 44, weight: .medium))
+                        .font(.system(size: 32, weight: .medium))
                         .foregroundStyle(.white)
-                        .frame(width: 72, height: 72)
+                        .frame(width: 48, height: 48)
                         .background(.secondary, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
 
                 Text("Settings")
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 22, weight: .bold))
 
-                Text("Setup Sparrow to work with your mouse.")
+                Text("Setup Sparrow to work with your mouse")
                     .font(.title3)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -50,12 +50,12 @@ struct SettingsView: View {
                         }
                     }
                 } footer: {
-                    Text("Tip: Button 0 is usually left click, Button 1 is right click, and Button 2 is middle click. Extra mouse buttons commonly start at 3.")
+                    Text("Button 0 is usually left click, Button 1 is right click, and Button 2 is middle click. Extra mouse buttons commonly start at 3.")
                 }
             }
             .formStyle(.grouped)
         }
-        .frame(width: 520)
+        .frame(width: 400)
     }
 }
 

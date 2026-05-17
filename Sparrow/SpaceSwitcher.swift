@@ -61,14 +61,11 @@ final class SpaceSwitcher {
             : oppositeDirectionDebounceInterval
 
         guard elapsed > debounceInterval else {
-            print("Blocked by debounce direction=\(direction) lastDirection=\(String(describing: lastSwitchDirection)) elapsed=\(String(format: "%.3f", elapsed)) threshold=\(debounceInterval)")
             return
         }
 
         let connection = connection
-        debugPrintSpaces(connection: connection)
         guard let display = displayInfo(at: location, connection: connection) else {
-            print("Blocked: no display info direction=\(direction) location=\(location)")
             return
         }
 
@@ -81,7 +78,6 @@ final class SpaceSwitcher {
         }
 
         guard display.spaceIDs.indices.contains(targetIndex) else {
-            print("Blocked: no target space direction=\(direction) display=\(display.id) currentIndex=\(display.currentIndex) targetIndex=\(targetIndex) spaceCount=\(display.spaceIDs.count)")
             return
         }
 
@@ -89,7 +85,6 @@ final class SpaceSwitcher {
         if performDockSwipe(swipeDirection) {
             lastSwitchTime = Date()
             lastSwitchDirection = direction
-            print("Posted Dock swipe direction=\(swipeDirection) requested=\(direction) display=\(display.id) currentIndex=\(display.currentIndex) targetIndex=\(targetIndex) elapsed=\(String(format: "%.3f", elapsed))")
         } else {
             print("Failed: Dock swipe direction=\(swipeDirection) requested=\(direction) display=\(display.id) currentIndex=\(display.currentIndex) targetIndex=\(targetIndex)")
         }
@@ -139,28 +134,6 @@ final class SpaceSwitcher {
         return true
     }
 
-    private func debugPrintSpaces(connection: Int32) {
-        guard let displays = CGSCopyManagedDisplaySpaces(connection) as? [[String: Any]] else {
-            print("Spaces: unavailable")
-            return
-        }
-
-        let active = activeSpaceID(connection: connection)
-        print("Active space: \(active)")
-        for display in displays {
-            let displayID = display["Display Identifier"] as? String ?? "unknown-display"
-            let current = (display["Current Space"] as? [String: Any])?["ManagedSpaceID"] as? Int
-            let spaces = display["Spaces"] as? [[String: Any]] ?? []
-            let summary = spaces.compactMap { space -> String? in
-                guard let id = space["ManagedSpaceID"] as? Int else { return nil }
-                let type = space["type"] as? Int ?? -1
-                let marker = id == current ? "*" : ""
-                return "\(marker)\(id)(type:\(type))"
-            }.joined(separator: ", ")
-            print("Display \(displayID): \(summary)")
-        }
-    }
-
     private struct DisplayInfo {
         let id: String
         let spaceIDs: [Int]
@@ -173,7 +146,6 @@ final class SpaceSwitcher {
         }
 
         let targetDisplayID = cursorDisplayID(at: location)
-        print("Switch location: \(location) targetDisplayID: \(targetDisplayID ?? "nil")")
 
         guard let targetDisplayID else {
             return nil
