@@ -1,5 +1,7 @@
 # Sparrow
 
+https://neovibrant.github.io/sparrow
+
 Sparrow is a minimalist macOS menu bar utility that maps configurable mouse side buttons to switch Spaces left and right.
 
 The app is intentionally small: native Swift/SwiftUI, no third-party dependencies, no Dock icon, and only the permissions needed to observe global mouse input.
