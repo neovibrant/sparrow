@@ -1,138 +1,154 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sparrow</title>
-  <style>
-    :root {
-      color-scheme: light dark;
-      --accent: #c49799;
-      --text: light-dark(#1d1d1f, #f5f5f7);
-      --muted: light-dark(#6e6e73, #a1a1a6);
-      --card: light-dark(#f5f5f7, #1c1c1e);
-      --background: light-dark(#ffffff, #000000);
-    }
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Sparrow</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+                --accent: #c49799;
+                --text: light-dark(#1d1d1f, #f5f5f7);
+                --muted: light-dark(#6e6e73, #a1a1a6);
+                --card: light-dark(#f5f5f7, #1c1c1e);
+                --background: light-dark(#ffffff, #000000);
+            }
 
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-      background: var(--background);
-      color: var(--text);
-      line-height: 1.5;
-    }
+            body {
+                margin: 0;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                    "Helvetica Neue", Arial, sans-serif;
+                background: var(--background);
+                color: var(--text);
+                line-height: 1.5;
+            }
 
-    main {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 72px 24px;
-    }
+            main {
+                max-width: 760px;
+                margin: 0 auto;
+                padding: 72px 24px;
+            }
 
-    .hero {
-      text-align: center;
-      padding: 48px 28px;
-      border-radius: 28px;
-      background: var(--card);
-    }
+            .hero {
+                text-align: center;
+                padding: 48px 28px;
+                border-radius: 28px;
+                background: var(--card);
+            }
 
-    .mark {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 18px;
-      border-radius: 18px;
-      background: var(--accent);
-    }
+            .logo {
+                width: 96px;
+                height: 96px;
+                margin: 0 auto 18px;
+                display: block;
+            }
 
-    h1 {
-      margin: 0;
-      font-size: clamp(40px, 8vw, 68px);
-      letter-spacing: -0.04em;
-      line-height: 1;
-    }
+            h1 {
+                margin: 0;
+                font-size: clamp(40px, 8vw, 68px);
+                letter-spacing: -0.04em;
+                line-height: 1;
+            }
 
-    .tagline {
-      max-width: 560px;
-      margin: 18px auto 0;
-      font-size: 22px;
-      color: var(--muted);
-    }
+            .tagline {
+                max-width: 560px;
+                margin: 18px auto 0;
+                font-size: 22px;
+                color: var(--muted);
+            }
 
-    section {
-      margin-top: 42px;
-    }
+            section {
+                margin-top: 42px;
+            }
 
-    h2 {
-      margin: 0 0 12px;
-      font-size: 24px;
-      letter-spacing: -0.02em;
-    }
+            h2 {
+                margin: 0 0 12px;
+                font-size: 24px;
+                letter-spacing: -0.02em;
+            }
 
-    p {
-      margin: 0 0 14px;
-      color: var(--muted);
-    }
+            p {
+                margin: 0 0 14px;
+                color: var(--muted);
+            }
 
-    ul {
-      margin: 0;
-      padding-left: 22px;
-      color: var(--muted);
-    }
+            ul {
+                margin: 0;
+                padding-left: 22px;
+                color: var(--muted);
+            }
 
-    li + li {
-      margin-top: 8px;
-    }
+            li + li {
+                margin-top: 8px;
+            }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
+            a {
+                color: var(--accent);
+                text-decoration: none;
+            }
 
-    a:hover {
-      text-decoration: underline;
-    }
+            a:hover {
+                text-decoration: underline;
+            }
 
-    footer {
-      margin-top: 52px;
-      padding-top: 24px;
-      border-top: 1px solid light-dark(#e5e5e7, #2c2c2e);
-      color: var(--muted);
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <div class="hero">
-      <div class="mark" aria-hidden="true"></div>
-      <h1>Sparrow</h1>
-      <p class="tagline">A small macOS menu bar app for switching Spaces with your mouse side buttons.</p>
-    </div>
+            footer {
+                margin-top: 52px;
+                padding-top: 24px;
+                border-top: 1px solid light-dark(#e5e5e7, #2c2c2e);
+                color: var(--muted);
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="hero">
+                <img class="logo" src="logo.png" alt="Sparrow logo" />
+                <h1>Sparrow</h1>
+                <p class="tagline">
+                    A small macOS menu bar app for switching Spaces with your
+                    mouse side buttons.
+                </p>
+            </div>
 
-    <section>
-      <h2>Use Your Mouse To Move Between Spaces</h2>
-      <p>Sparrow lets you assign mouse buttons to move one macOS Space left or right. It is built for people who use multiple desktops and want a quick mouse-first way to navigate them.</p>
-    </section>
+            <section>
+                <h2>Use Your Mouse To Move Between Spaces</h2>
+                <p>
+                    Sparrow lets you assign mouse buttons to move one macOS
+                    Space left or right. It is built for people who use multiple
+                    desktops and want a quick mouse-first way to navigate them.
+                </p>
+            </section>
 
-    <section>
-      <h2>Features</h2>
-      <ul>
-        <li>Switch Spaces using configurable mouse buttons.</li>
-        <li>Choose separate buttons for moving left and right.</li>
-        <li>Runs quietly from the macOS menu bar.</li>
-        <li>Native Settings window for button mapping.</li>
-        <li>Preferences are stored locally on your Mac.</li>
-      </ul>
-    </section>
+            <section>
+                <h2>Features</h2>
+                <ul>
+                    <li>Switch Spaces using configurable mouse buttons.</li>
+                    <li>Choose separate buttons for moving left and right.</li>
+                    <li>Runs quietly from the macOS menu bar.</li>
+                    <li>Native Settings window for button mapping.</li>
+                    <li>Preferences are stored locally on your Mac.</li>
+                </ul>
+            </section>
 
-    <section>
-      <h2>Support</h2>
-      <p>If Sparrow does not respond to mouse buttons, check macOS privacy settings and make sure the app has permission to observe input. Sparrow needs this permission to detect global mouse button presses.</p>
-      <p>Privacy details are available in the <a href="privacy.html">Privacy Policy</a>.</p>
-    </section>
+            <section>
+                <h2>Support</h2>
+                <p>
+                    If Sparrow does not respond to mouse buttons, check macOS
+                    privacy settings and make sure the app has permission to
+                    observe input. Sparrow needs this permission to detect
+                    global mouse button presses.
+                </p>
+                <p>
+                    Privacy details are available in the
+                    <a href="privacy.html">Privacy Policy</a>.
+                </p>
+            </section>
 
-    <footer>
-      <span>Sparrow for macOS.</span>
-    </footer>
-  </main>
-</body>
+            <footer>
+                <span>© Neovibrant LTD, 2026. Sparrow for macOS.</span>
+            </footer>
+        </main>
+    </body>
 </html>
