@@ -1,5 +1,6 @@
 import Foundation
 import CoreGraphics
+import ApplicationServices
 
 class MouseRemapper {
     private var eventTap: CFMachPort?
@@ -16,6 +17,8 @@ class MouseRemapper {
     }
     
     private func startListening() {
+        requestAccessibilityPermissionIfNeeded()
+
         let eventMask = CGEventMask(1 << CGEventType.otherMouseDown.rawValue)
         
         guard let tap = CGEvent.tapCreate(
@@ -34,6 +37,11 @@ class MouseRemapper {
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource!, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
+    }
+
+    private func requestAccessibilityPermissionIfNeeded() {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        _ = AXIsProcessTrustedWithOptions(options)
     }
 
     private static let eventTapCallback: CGEventTapCallBack = { _, type, event, userInfo in
