@@ -22,6 +22,73 @@ private func CGSShowSpaces(_ connection: Int32, _ spaces: NSArray)
 @_silgen_name("CGDisplayCreateUUIDFromDisplayID")
 private func CGDisplayCreateUUIDFromDisplayID(_ displayID: CGDirectDisplayID) -> CFUUID?
 
+// macOS 27 ignores synthetic Dock swipes unless the CGEvent carries a matching IOHIDEvent.
+private enum DockSwipeHIDEvent {
+    private typealias CreateFunction = @convention(c) (CFAllocator?, UInt32, UInt64, UInt32) -> Unmanaged<CFTypeRef>?
+    private typealias SetIntegerFunction = @convention(c) (CFTypeRef, UInt32, Int) -> Void
+    private typealias SetFloatFunction = @convention(c) (CFTypeRef, UInt32, Double) -> Void
+    private typealias AppendFunction = @convention(c) (CFTypeRef, CFTypeRef, UInt32) -> Void
+    private typealias AttachFunction = @convention(c) (CGEvent, CFTypeRef) -> Void
+
+    private struct API {
+        let create: CreateFunction
+        let setInteger: SetIntegerFunction
+        let setFloat: SetFloatFunction
+        let append: AppendFunction
+        let attach: AttachFunction
+    }
+
+    private static let api: API? = {
+        guard let skyLight = dlopen("/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight", RTLD_NOW),
+              let create = dlsym(skyLight, "IOHIDEventCreate"),
+              let setInteger = dlsym(skyLight, "IOHIDEventSetIntegerValue"),
+              let setFloat = dlsym(skyLight, "IOHIDEventSetFloatValue"),
+              let append = dlsym(skyLight, "IOHIDEventAppendEvent"),
+              let attach = dlsym(skyLight, "SLEventSetIOHIDEvent") else {
+            return nil
+        }
+
+        return API(
+            create: unsafeBitCast(create, to: CreateFunction.self),
+            setInteger: unsafeBitCast(setInteger, to: SetIntegerFunction.self),
+            setFloat: unsafeBitCast(setFloat, to: SetFloatFunction.self),
+            append: unsafeBitCast(append, to: AppendFunction.self),
+            attach: unsafeBitCast(attach, to: AttachFunction.self)
+        )
+    }()
+
+    private static let velocityEventType: UInt32 = 9
+    private static let dockSwipeEventType: UInt32 = 23
+    private static let motionField = dockSwipeEventType << 16 | 1
+    private static let progressField = dockSwipeEventType << 16 | 2
+    private static let flavorField = dockSwipeEventType << 16 | 5
+    private static let velocityXField = velocityEventType << 16 | 0
+    private static let velocityYField = velocityEventType << 16 | 1
+    private static let motionHorizontal = 1
+    private static let flavorDockPrimary = 3
+
+    static func attach(to event: CGEvent, phase: Int64, progress: Double, endVelocity: Double?, timestamp: UInt64) -> Bool {
+        guard let api,
+              let swipe = api.create(nil, dockSwipeEventType, timestamp, UInt32(phase) << 24)?.takeRetainedValue() else {
+            return false
+        }
+
+        api.setInteger(swipe, motionField, motionHorizontal)
+        api.setInteger(swipe, flavorField, flavorDockPrimary)
+        api.setFloat(swipe, progressField, progress)
+
+        if let endVelocity,
+           let velocity = api.create(nil, velocityEventType, timestamp, 0)?.takeRetainedValue() {
+            api.setFloat(velocity, velocityXField, endVelocity)
+            api.setFloat(velocity, velocityYField, endVelocity)
+            api.append(swipe, velocity, 0)
+        }
+
+        api.attach(event, swipe)
+        return true
+    }
+}
+
 final class SpaceSwitcher {
     enum Direction {
         case left
@@ -51,6 +118,8 @@ final class SpaceSwitcher {
     private let gestureAnimationFrameCount = 10
     private let sameDirectionDebounceInterval = 0.16
     private let oppositeDirectionDebounceInterval = 0.16
+    private let hidGestureMinimumProgress = 0.001
+    private let usesHIDGestureEvents = ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 27
     private var lastSwitchTime = Date.distantPast
     private var lastSwitchDirection: Direction?
 
@@ -119,9 +188,26 @@ final class SpaceSwitcher {
             return false
         }
 
-        let isRight = direction == .right
+        // The IOHIDEvent-backed swipe runs in the opposite direction and needs a non-zero progress.
+        let isRight = (direction == .right) != usesHIDGestureEvents
+        let progressMagnitude = usesHIDGestureEvents ? max(progressMagnitude, hidGestureMinimumProgress) : progressMagnitude
         let progress = isRight ? progressMagnitude : -progressMagnitude
         let velocity = isRight ? velocityMagnitude : -velocityMagnitude
+
+        if usesHIDGestureEvents {
+            let timestamp = mach_absolute_time()
+            event.type = CGEventType(rawValue: UInt32(cgsEventDockControl))!
+            event.timestamp = timestamp
+            guard DockSwipeHIDEvent.attach(
+                to: event,
+                phase: phase,
+                progress: progress,
+                endVelocity: phase == gesturePhaseEnded ? velocity : nil,
+                timestamp: timestamp
+            ) else {
+                return false
+            }
+        }
 
         event.setIntegerValueField(cgsEventTypeField, value: cgsEventDockControl)
         event.setIntegerValueField(gestureHIDTypeField, value: hidEventTypeDockSwipe)
